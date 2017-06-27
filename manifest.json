@@ -24,6 +24,10 @@
     "scripts": ["background.js"]
   },
 
+  "web_accessible_resources": [
+    "codeToEject.js"
+  ],
+
   "options_ui": {
     "page": "options/options.html",
     "chrome_style": true

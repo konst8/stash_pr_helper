@@ -6,11 +6,16 @@ function insertReviewers(chromeStorage) {
     var newValue = "'" + value + "'";
     return newValue;
   });
-  console.log(reviewersList);
-  var codeToInject = "(function($){ var reviewersList = ["+reviewersList+"]; var $reviewersInput = $('.pull-request-reviewers .select2-input'); var time = 0; $.each(reviewersList, function(index, value){ setTimeout(function(){ $reviewersInput .val(reviewersList[index]) .click(); }, time); setTimeout(function(){   $('.select2-highlighted .select2-result-label').trigger('mouseup'); }, time + 2000); time += 2000; }); })(jQuery);"
-  console.log(codeToInject);
-  var script = document.createElement('script');
-  var code = document.createTextNode('(function() {' + codeToInject + '})();');
-  script.appendChild(code);
-  (document.body || document.head).appendChild(script);
+  var ajaxRequest = new XMLHttpRequest();
+  var embeddedScriptUrl = chrome.extension.getURL("codeToEject.js");
+  ajaxRequest.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      var script = document.createElement('script');
+      var code = document.createTextNode('var reviewersList = [' + reviewersList + ']; ' + this.response);
+      script.appendChild(code);
+      (document.body || document.head).appendChild(script);
+    }
+  };
+  ajaxRequest.open("GET", embeddedScriptUrl, true);
+  ajaxRequest.send();
 }
