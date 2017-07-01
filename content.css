@@ -1,0 +1,12 @@
+.suggested-revievers-groups {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    display: block;
+    width: 100%;
+    outline: none;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+.suggested-revievers-groups option {
+    padding: 4px 5px;
+    font-size: 13px;
+}

@@ -10,7 +10,7 @@
     "storage"
   ],
 
-  "icons": { 
+  "icons": {
     "48": "images/icon48.png",
     "128": "images/icon128.png" 
   },
@@ -23,6 +23,13 @@
   "background": {
     "scripts": ["background.js"]
   },
+
+  "content_scripts": [
+    {
+      "matches": ["https://dev-stash.jjconsumer.com/*/pull-requests?*"],
+      "css": ["content.css"]
+    }
+  ],
 
   "web_accessible_resources": [
     "codeToEject.js"
