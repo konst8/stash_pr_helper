@@ -2,15 +2,40 @@
 <html>
 <head>
   <title>My Test Extension Options</title>
+  <link href="../libs/jquery-ui-1.12.1.custom/jquery-ui.min.css" rel="stylesheet">
   <link type="text/css" rel="stylesheet" href="options.css" media="all">
 </head>
 
 <body>
-  <textarea id="reviewers" rows="5" placeholder="List of reviewers in csv format, e.g.: bgates, sjobs, jsmith, aivanov"></textarea>
+  <div class="groups">
+    <div class="group ui-state-default">
+      <span class="ui-icon ui-icon-arrow-4"></span>
+      <div class="content">
+        <input type="text" placeholder="Input group name">
+        <textarea id="reviewers" rows="2" placeholder="Input a list of reviewers in csv format, e.g.: bgates, sjobs, jsmith, aivanov"></textarea>
+      </div>
+    </div>
+    <div class="group ui-state-default">
+      <span class="ui-icon ui-icon-arrow-4"></span>
+      <div class="content">
+        <input type="text" placeholder="Group name">
+        <textarea id="reviewers" rows="2" placeholder="List of reviewers in csv format, e.g.: bgates, sjobs, jsmith, aivanov"></textarea>
+      </div>
+    </div>
+  </div>
 
-  <div id="status"></div>
-  <button id="save">Save</button>
+  <div class="add-group-wrapper">
+    <a id="add-group"><span class="ui-icon ui-icon-plus"></span>Add group</a>
+  </div>
 
+  <div class="actions-wrapper">
+    <div id="status"></div>
+    <button id="save">Save</button>
+    <a id="cancel">Cancel</a>
+  </div>
+
+  <script src="../libs/jquery-ui-1.12.1.custom/external/jquery/jquery.js"></script>
+  <script src="../libs/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

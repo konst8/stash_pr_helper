@@ -1,3 +1,61 @@
-textarea {
+::-webkit-input-placeholder {
+  color: #ccc;
+  font-weight: normal;
+}
+
+body {
+  width: 600px;
+}
+
+.group {
+  background-color: rgba(0, 0, 0, .05);
+  padding: 20px 10px;
+  margin: 20px 0;
+  border: none;
+}
+
+.ui-icon-close {
+  float: right;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.group .ui-icon-arrow-4 {
+  float: left;
+  margin-right: 10px;
+  cursor: -webkit-grab;
+}
+
+.group .content {
+  display: block;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+.group textarea {
   width: 100%;
+  padding: 5px 10px;
+}
+
+.group input {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 5px 10px;
+}
+
+.add-group-wrapper {
+  border-bottom: 1px solid #eee;
+  margin-bottom: 20px;
+  text-align: right;
+  padding-bottom: 20px;
+}
+
+#add-group .ui-icon {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.actions-wrapper {
+  text-align: right;
 }

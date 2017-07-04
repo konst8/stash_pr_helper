@@ -1,4 +1,7 @@
+(function($){
+
 // chrome.storage.sync.get('reviewers', insertReviewers);
+chrome.storage.sync.get('groups', addGroupsSuggestions);
 
 function insertReviewers(chromeStorage) {
   var reviewersList = chromeStorage.reviewers.split(', ');
@@ -20,28 +23,40 @@ function insertReviewers(chromeStorage) {
   ajaxRequest.send();
 }
 
-function addGroupsSuggestions() {
-  var groups = $('<select/>', {
+function createSelectOptions(groupsData) {
+  var $_options = $();
+  groupsData.map(function(groupData){
+    console.log(groupData);
+    var $_option = $('<option/>', {
+        'html': [
+          $('<strong/>', {
+            'text': groupData.groupName + ': '
+          }),
+          $('<span/>', {
+            'text': groupData.reviewers
+          }),
+        ]
+    });
+    $_options = $_options.add($_option);
+  });
+  return $_options;
+}
+
+function addGroupsSuggestions(chromeStorage) {
+  var $_groups = $('<select/>', {
       'class': 'suggested-revievers-groups',
-      'html': [
-          $('<option/>', {
-              'text': 'test group 1',
-          })
-              .attr({'data-revievers': 'test1, test2, test3'}),
-          $('<option/>', {
-              'text': 'test group 2' 
-          })]
-      })
-          .attr({'size': 2})
-          .on('blur', function(){
-              $('.suggested-revievers-groups').hide();
-          });
+      'html': createSelectOptions(chromeStorage.groups)
+    })
+      .attr({'size': chromeStorage.groups.length})
+      .on('blur', function(){
+          $('.suggested-revievers-groups').hide();
+      });
 
   $('.select2-search-field .select2-input')
       .on('keyup', function(ev){
           var arrowsKeyCodes = [37, 38, 39, 40];
           if (arrowsKeyCodes.indexOf(ev.which) != -1 && this.value == '') {
-              $(this).parents('.select2-container').append(groups);
+              $(this).parents('.select2-container').append($_groups);
               hideDefaultDropdown();
               $('.suggested-revievers-groups')
                   .show()
@@ -59,3 +74,5 @@ function hideDefaultDropdown() {
         .removeClass("select2-dropdown-open")
         .removeClass("select2-container-active");
 }
+
+})(jQuery);
