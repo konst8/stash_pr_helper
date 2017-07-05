@@ -10,3 +10,8 @@
     padding: 4px 5px;
     font-size: 13px;
 }
+.suggested-revievers-groups option:after {
+  content: " " attr(data-reviewers);
+  color: lightgray;
+  font-size: .8em;
+}

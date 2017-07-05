@@ -114,9 +114,9 @@
       groups.push(data);
     });
     chrome.storage.sync.set({
-      groups: groups
+      groups: groups }, function(){
+        window.close();
     });
-    console.log(groups);
   }
 
   $saveButton.on('click', saveGroups);
