@@ -26,7 +26,8 @@
 
   "content_scripts": [
     {
-      "matches": ["https://dev-stash.jjconsumer.com/*/pull-requests?*"],
+      "matches": ["https://*/*pull-requests?*", "https://*/*compare/commits?*"],
+      "js": ["libs/jquery-ui-1.12.1.custom/external/jquery/jquery.js", "addReviewersScript.js"],
       "css": ["content.css"]
     }
   ],

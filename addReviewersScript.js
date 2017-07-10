@@ -1,27 +1,14 @@
 (function($){
 
-// chrome.storage.sync.get('reviewers', insertReviewers);
-chrome.storage.sync.get('groups', addGroupsSuggestions);
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    if (request.message === "loaded?") {
+      sendResponse({loaded: true});
+    }
+  }
+);
 
-// function insertReviewers(chromeStorage) {
-//   var reviewersList = chromeStorage.reviewers.split(', ');
-//   reviewersList = reviewersList.map(function(value, index){
-//     var newValue = "'" + value + "'";
-//     return newValue;
-//   });
-//   var ajaxRequest = new XMLHttpRequest();
-//   var embeddedScriptUrl = chrome.extension.getURL("codeToEject.js");
-//   ajaxRequest.onreadystatechange = function() {
-//     if (this.readyState == 4 && this.status == 200) {
-//       var script = document.createElement('script');
-//       var code = document.createTextNode('var reviewersList = [' + reviewersList + ']; ' + this.response);
-//       script.appendChild(code);
-//       (document.body || document.head).appendChild(script);
-//     }
-//   };
-//   ajaxRequest.open("GET", embeddedScriptUrl, true);
-//   ajaxRequest.send();
-// }
+chrome.storage.sync.get('groups', addGroupsSuggestions);
 
 function insertReviewers(reviewersCsv) {
   reviewersArray = reviewersCsv.split(', ');
@@ -46,7 +33,6 @@ function insertReviewers(reviewersCsv) {
 function createSelectOptions(groupsData) {
   var $_options = $();
   groupsData.map(function(groupData){
-    console.log(groupData);
     var $_option = $('<option/>', {
       'text': groupData.groupName,
       'data-reviewers': groupData.reviewers
@@ -68,13 +54,15 @@ function addGroupsSuggestions(chromeStorage) {
       .on('blur', function(){
         $('.suggested-revievers-groups').hide();
       })
-      .on('keyup', function(ev){
+      .on('keyup keypress keydown', function(ev){
         var reviewersCsv = $(this).find('option:selected').attr('data-reviewers');
         var rightArrowAndReturnKeyCodes = [13, 39];
         if (rightArrowAndReturnKeyCodes.indexOf(ev.which) != -1) {
+          ev.stopPropagation();
           ev.preventDefault();
           insertReviewers(reviewersCsv);
           hideDefaultDropdown();
+          return false;
         }
       });
 
