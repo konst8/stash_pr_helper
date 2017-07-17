@@ -1,0 +1,44 @@
+{
+  "manifest_version": 2,
+
+  "name": "Stash helper",
+  "description": "Fills in Pull Request's reviewers",
+  "version": "1.0",
+
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+
+  "icons": {
+    "48": "images/icon48.png",
+    "128": "images/icon128.png" 
+  },
+
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_title": "Fill in PR's reviewers"
+  },
+
+  "background": {
+    "scripts": ["background.js"]
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://*/*pull-requests?*", "https://*/*compare/commits?*"],
+      "js": ["libs/jquery-ui-1.12.1.custom/external/jquery/jquery.js", "addReviewersScript.js"],
+      "css": ["content.css"]
+    }
+  ],
+
+  "web_accessible_resources": [
+    "codeToEject.js"
+  ],
+
+  "options_ui": {
+    "page": "options/options.html",
+    "chrome_style": true,
+    "open_in_tab": true
+  }
+}
