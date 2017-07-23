@@ -18,7 +18,7 @@ function addTemplatesSuggestions(chromeStorage) {
       'class': 'suggested-templates',
       'html': $_templateSelectOptions(chromeStorage.templates)
     })
-      .attr({'size': chromeStorage.templates.length})
+      .attr({'size': chromeStorage.templates.length < 2 ? 2 : chromeStorage.templates.length})
       .on('blur', function(){
         $('.suggested-templates').hide();
       })
@@ -103,7 +103,7 @@ function addGroupsSuggestions(chromeStorage) {
       'class': 'suggested-revievers-groups',
       'html': createSelectOptions(chromeStorage.groups)
     })
-      .attr({'size': chromeStorage.groups.length})
+      .attr({'size': chromeStorage.groups.length < 2 ? 2 : chromeStorage.groups.length})
       .on('blur', function(){
         $('.suggested-revievers-groups').hide();
       })

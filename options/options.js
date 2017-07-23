@@ -1,203 +1,153 @@
-(function($){
+'use strict';
 
-  // PR templates
+(function ($){
+  
+  // PR entity ("abstract")
 
-  var template = {
+  class Entity {
 
-    $wrapper: $('.templates'),
-    $addButton: $('a#add-template'),
-
-    compose: function (templateName, templateBody){
-      if (typeof templateName === 'undefined') {
-        var templateName = '';
+    constructor() {
+      if (new.target === Entity) {
+        throw new Error("Can't instantiate abstract class!")
       }
-      if (typeof templateBody === 'undefined') {
-        var templateBody = '';
-      }
-      var collapsed = arguments.length < 1 ? 0 : ' collapsed';
-      var $_template = $('<div/>', {
-        'class': 'template ui-state-default' + collapsed,
+    }
+
+    init() {
+      this.options()
+      chrome.storage.sync.get([this.constructor.name], this.load.bind(this))
+      this.$add.on('click', this.add.bind(this))
+      this.$container.sortable()
+      $('button#save').on('click', this.save.bind(this))
+    }
+
+    options() {
+      throw new Error("Abstract method! All the options must be overriden in an instantiable class")
+      this.$container
+      this.$add
+      this.titleHelpText
+      this.contentHelpText
+      this.cssClass      
+    }
+
+    _compose(title = '', content = '') {
+      var collapsed = content !== '' ? ' collapsed' : ''
+      var $_entity = $('<div/>', {
+        'class': 'entity ui-state-default ' + this.cssClass + collapsed,
         'html': [
           $('<span/>', {
-            'class': 'ui-icon ui-icon-close'
-          }),
-          $('<span/>', {
-            'class': 'ui-icon ui-icon-caret-1-s'
+            'class': 'close-trigger ui-icon ui-icon-close'
           })
             .on('click', function(){
-              $(this).parent().toggleClass('collapsed');
+              $(this).closest('.entity').remove()
+            }),
+          $('<span/>', {
+            'class': 'expand-trigger ui-icon ui-icon-caret-1-s'
+          })
+            .on('click', function(){
+              $(this).closest('.entity').toggleClass('collapsed')
+                .find('.content')
+                  .attr('data-title', $(this).siblings('.content').find('input').val())
+                  .attr('data-content', $(this).siblings('.content').find('textarea').val())
             }),
           $('<span/>', {
             'class': 'ui-icon ui-icon-arrow-4'
           }),
           $('<div/>', {
             'class': 'content',
-            'data-name': templateName,
-            'data-body': templateBody,
+            'data-title': title,
+            'data-content': content,
             'html': [
               $('<input/>', {
                 'type': 'text',
-                'placeholder': 'Template name'
+                'placeholder': this.titleHelpText
               })
-                .val(templateName),
+                .val(title),
               $('<textarea/>', {
                 'rows': 5,
-                'placeholder': 'Add example PR text here'
+                'placeholder': this.contentHelpText
               })
-                .val(templateBody)
+                .val(content)
             ]
           })
         ]
-      });
-      return $_template;
-    },
+      })
+      return $_entity
+    }
 
-    load: function (chromeStorage) {
-      if (typeof chromeStorage.templates !== 'undefined' && chromeStorage.templates.length) {
-        var templatesData = chromeStorage.templates;
-        var $_templatesContainer = $();
-        templatesData.map(function(templateData){
-          $_templatesContainer = $_templatesContainer.add(template.compose(templateData.templateName, templateData.templateBody));
-        });
-        template.$wrapper.html($_templatesContainer);
+    add() {
+      this.$container.append(this._compose())
+    }
+
+    remove() {
+      this.closest('.entity').remove()
+    }
+
+    load(chromeStorage) {
+      var storedEntitiesNames = Object.getOwnPropertyNames(chromeStorage)
+      if (storedEntitiesNames.length) {
+        var storedEntities = chromeStorage[storedEntitiesNames[0]]
+        var $_container = $()
+        storedEntities.map(entity => {
+          $_container = $_container.add(this._compose(entity.title, entity.content))
+        })
+        this.$container.html($_container)
       } else {
-        template.$wrapper.html(template.compose());
+        this.$container.html(this._compose())
       }
-    },
+    }
 
-    add: function() {
-      template.$wrapper.append(template.compose());
-    },
-
-    save: function() {
-      var templates = [];
-      $('.template').each(function(){
-        var templateName = $('input', this).val();
-        var templateBody = $('textarea', this).val();
-        if (templateBody === '') {
-          return true;
+    save() {
+      var entities = []
+      var $entity = $('.entity', this.$container)
+      $entity.each(function(){
+        var title = $('input', this).val()
+        var content = $('textarea', this).val()
+        if (content === '') {
+          return true
         }
         var data = {
-          'templateName': $('input', this).val(),
-          'templateBody': $('textarea', this).val()
+          'title': $('input', this).val(),
+          'content': $('textarea', this).val()
         }
-        templates.push(data);
-      });
-      chrome.storage.sync.set({
-        templates: templates }, function(){
-          window.close();
-      });
-    }
-  };
-
-  chrome.storage.sync.get('templates', template.load);
-  template.$addButton.on('click', template.add);
-  template.$wrapper.sortable();
-
-  // PR reviewers groups
-
-  var $groupsWrapper = $('.groups');
-  var $group = $('.group');
-  var $saveButton = $('#save');
-  var $cancelButton = $('#cancel');
-  chrome.storage.sync.get('groups', loadGroups);
-  $('#add-group').on('click', addNewGroup);
-  $('body').on('click', '.ui-icon-close', removeCurrentGroup);
-  $saveButton
-    .on('click', template.save)
-    .on('click',  saveGroups);
-  $cancelButton.on('click', function(){window.close()});
-  $groupsWrapper.sortable();
-
-  function createGroup(groupName, reviewers){
-    if (typeof groupName === 'undefined') {
-      var groupName = '';
-    }
-    if (typeof reviewers === 'undefined') {
-      var reviewers = '';
-    }
-    var collapsed = arguments.length < 1 ? 0 : ' collapsed';
-    var $_group = $('<div/>', {
-      'class': 'group ui-state-default' + collapsed,
-      'html': [
-        $('<span/>', {
-          'class': 'ui-icon ui-icon-close'
-        }),
-        $('<span/>', {
-          'class': 'ui-icon ui-icon-caret-1-s'
-        })
-          .on('click', function(){
-            $(this)
-              .parent()
-                .toggleClass('collapsed')
-                .find('.content')
-                  .attr('data-name', $(this).siblings('.content').find('input').val())
-                  .attr('data-body', $(this).siblings('.content').find('textarea').val());
-          }),
-        $('<span/>', {
-          'class': 'ui-icon ui-icon-arrow-4'
-        }),
-        $('<div/>', {
-          'class': 'content',
-          'data-name': groupName,
-          'data-body': reviewers,
-          'html': [
-            $('<input/>', {
-              'type': 'text',
-              'placeholder': 'Group name'
-            })
-              .val(groupName),
-            $('<textarea/>', {
-              'rows': 2,
-              'placeholder': 'List of reviewers in csv format, e.g.: bgates, sjobs, adobkin, kmishur'
-            })
-              .val(reviewers)
-          ]
-        })
-      ]
-    });
-    return $_group;
-  }
-
-  function loadGroups(chromeStorage) {
-    if (typeof chromeStorage.groups !== 'undefined' && chromeStorage.groups.length) {
-      var groupsData = chromeStorage.groups;
-      var $_groupsContainer = $();
-      groupsData.map(function(groupData){
-        $_groupsContainer = $_groupsContainer.add(createGroup(groupData.groupName, groupData.reviewers));
+        entities.push(data)
       })
-      $groupsWrapper.html($_groupsContainer);
-    } else {
-      $groupsWrapper.html(createGroup());
+      chrome.storage.sync.set({
+        [this.constructor.name]: entities }, function(){
+          window.close()
+      })
     }
   }
 
-  function addNewGroup() {
-    $groupsWrapper.append(createGroup());
+  // PR description
+
+  class Description extends Entity {
+
+    options() {
+      this.$container = $('.descriptions')
+      this.$add = $('a#add-description')
+      this.titleHelpText = "Title"
+      this.contentHelpText = "PR's description"
+      this.cssClass = "description-entity"
+    }
   }
 
-  function removeCurrentGroup() {
-    $(this).parent($group).remove();
+  var description = new Description()
+  description.init()
+
+  // PR reviewers
+
+  class Reviewers extends Entity {
+
+    options() {
+      this.$container = $('.reviewers')
+      this.$add = $('a#add-reviewers')
+      this.titleHelpText = "Title"
+      this.contentHelpText = "PR reviewers in csv format"
+      this.cssClass = "reviewers-entity"
+    }
   }
 
-  function saveGroups() {
-    var groups = [];
-    $('.group').each(function(){
-      var groupName = $('input', this).val();
-      var reviewers = $('textarea', this).val();
-      if (reviewers === '') {
-        return true;
-      }
-      var data = {
-        'groupName': $('input', this).val(),
-        'reviewers': $('textarea', this).val()
-      }
-      groups.push(data);
-    });
-    chrome.storage.sync.set({
-      groups: groups }, function(){
-        window.close();
-    });
-  }
+  var reviewers = new Reviewers()
+  reviewers.init()
 
-})(jQuery);
+})(jQuery)
