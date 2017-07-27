@@ -2,35 +2,26 @@
 
 (function ($){
   
-  // PR entity ("abstract")
+  // PR entity's default object.
+  // We will inherit from it later.
 
-  class Entity {
+  const Entity = {
 
-    constructor() {
-      if (new.target === Entity) {
-        throw new Error("Can't instantiate abstract class!")
-      }
-    }
+    $container: null,
+    $add: null,
+    titleHelpText: null,
+    contentHelpText: null,
+    cssClass: null,
 
     init() {
-      this.options()
-      chrome.storage.sync.get([this.constructor.name], this.load.bind(this))
-      this.$add.on('click', this.add.bind(this))
-      this.$container.sortable()
-      $('button#save').on('click', this.save.bind(this))
-    }
-
-    options() {
-      throw new Error("Abstract method! All the options must be overriden in an instantiable class")
-      this.$container
-      this.$add
-      this.titleHelpText
-      this.contentHelpText
-      this.cssClass      
-    }
+      chrome.storage.sync.get(this.name, this.load.bind(this));
+      this.$add.on('click', this.add.bind(this));
+      this.$container.sortable();
+      $('button#save').on('click', this.save.bind(this));
+    },
 
     _compose(title = '', content = '') {
-      var collapsed = content !== '' ? ' collapsed' : ''
+      var collapsed = content !== '' ? ' collapsed' : '';
       var $_entity = $('<div/>', {
         'class': 'entity ui-state-default ' + this.cssClass + collapsed,
         'html': [
@@ -38,7 +29,7 @@
             'class': 'close-trigger ui-icon ui-icon-close'
           })
             .on('click', function(){
-              $(this).closest('.entity').remove()
+              $(this).closest('.entity').remove();
             }),
           $('<span/>', {
             'class': 'expand-trigger ui-icon ui-icon-caret-1-s'
@@ -47,7 +38,7 @@
               $(this).closest('.entity').toggleClass('collapsed')
                 .find('.content')
                   .attr('data-title', $(this).siblings('.content').find('input').val())
-                  .attr('data-content', $(this).siblings('.content').find('textarea').val())
+                  .attr('data-content', $(this).siblings('.content').find('textarea').val());
             }),
           $('<span/>', {
             'class': 'ui-icon ui-icon-arrow-4'
@@ -72,82 +63,79 @@
         ]
       })
       return $_entity
-    }
+    },
 
     add() {
-      this.$container.append(this._compose())
-    }
+      this.$container.append(this._compose());
+    },
 
     remove() {
-      this.closest('.entity').remove()
-    }
+      this.closest('.entity').remove();
+    },
 
     load(chromeStorage) {
       var storedEntitiesNames = Object.getOwnPropertyNames(chromeStorage)
       if (storedEntitiesNames.length) {
-        var storedEntities = chromeStorage[storedEntitiesNames[0]]
-        var $_container = $()
+        var storedEntities = chromeStorage[storedEntitiesNames[0]];
+        var $_container = $();
         storedEntities.map(entity => {
           $_container = $_container.add(this._compose(entity.title, entity.content))
-        })
-        this.$container.html($_container)
+        });
+        this.$container.html($_container);
       } else {
-        this.$container.html(this._compose())
+        this.$container.html(this._compose());
       }
-    }
+    },
 
     save() {
-      var entities = []
-      var $entity = $('.entity', this.$container)
+      var entities = [];
+      var $entity = $('.entity', this.$container);
       $entity.each(function(){
-        var title = $('input', this).val()
-        var content = $('textarea', this).val()
+        var title = $('input', this).val();
+        var content = $('textarea', this).val();
         if (content === '') {
-          return true
+          return true;
         }
         var data = {
           'title': $('input', this).val(),
           'content': $('textarea', this).val()
         }
-        entities.push(data)
+        entities.push(data);
       })
       chrome.storage.sync.set({
-        [this.constructor.name]: entities }, function(){
-          window.close()
+        [this.name]: entities }, function(){
+          //window.close();
       })
     }
+  };
+
+  function createEntity(properties) {
+    return Object.assign(Object.create(Entity), properties);
   }
 
   // PR description
 
-  class Description extends Entity {
-
-    options() {
-      this.$container = $('.descriptions')
-      this.$add = $('a#add-description')
-      this.titleHelpText = "Title"
-      this.contentHelpText = "PR's description"
-      this.cssClass = "description-entity"
-    }
-  }
-
-  var description = new Description()
-  description.init()
+  const Description = createEntity({
+    name: 'Description',
+    $container: $('.descriptions'),
+    $add: $('a#add-description'),
+    titleHelpText: "Title",
+    contentHelpText: "PR's description",
+    cssClass: "description-entity"
+  });
+  Description.init();
 
   // PR reviewers
 
-  class Reviewers extends Entity {
+  const Reviewers = createEntity({
+    name: 'Reviewers',
+    $container: $('.reviewers'),
+    $add: $('a#add-reviewers'),
+    titleHelpText: "Title",
+    contentHelpText: "PR reviewers in csv format",
+    cssClass: "reviewers-entity"
+  });
+  Reviewers.init();
 
-    options() {
-      this.$container = $('.reviewers')
-      this.$add = $('a#add-reviewers')
-      this.titleHelpText = "Title"
-      this.contentHelpText = "PR reviewers in csv format"
-      this.cssClass = "reviewers-entity"
-    }
-  }
-
-  var reviewers = new Reviewers()
-  reviewers.init()
 
 })(jQuery)
