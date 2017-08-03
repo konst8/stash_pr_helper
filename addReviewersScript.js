@@ -8,58 +8,102 @@ chrome.runtime.onMessage.addListener(
   }
 );
 
-chrome.storage.sync.get('templates', addTemplatesSuggestions);
+//chrome.storage.sync.get('templates', addTemplatesSuggestions);
 chrome.storage.sync.get('groups', addGroupsSuggestions);
 
 // PR templates
 
-function addTemplatesSuggestions(chromeStorage) {
-  var $_templates = $('<select/>', {
-      'class': 'suggested-templates',
-      'html': $_templateSelectOptions(chromeStorage.templates)
-    })
-      .attr({'size': chromeStorage.templates.length < 2 ? 2 : chromeStorage.templates.length})
-      .on('blur', function(){
-        $('.suggested-templates').hide();
+  // Default suggestion object (selectbox with suggestions
+  // to be appended for some input or textarea on the page).
+
+  const Suggestion = {
+
+    storageName: null,
+    $targetInput: null,
+    $appendSelector: null,
+    appendType: 'after', // options: 'after', 'before', 'prepend', 'append'
+
+    init() {
+      this.$appendSelector = this.$appendSelector === null ? this.$targetInput : this.$appendSelector;
+      //chrome.storage.sync.get(this.storageName, this.load.bind(this));
+      this.$targetInput.on('click keyup', this, this.showSuggestions);
+    },
+
+    load(chromeStorage) {
+      var storedEntities = chromeStorage[this.storageName];
+      if (typeof storedEntities !== undefined) {
+        var $_suggestionsSelectbox = this._compose(storedEntities);
+        this.$appendSelector[this.appendType]($_suggestionsSelectbox);
+        $_suggestionsSelectbox.focus();
+      } 
+    },
+
+    _compose(entities) {
+      function _composeOptions(entities) {
+        var $_options = $();
+        entities.map(entity => {
+          var $_option = $('<option/>', {
+            'text': ' ',
+            'data-title': entity.title,
+            'data-content': entity.content
+          });
+          $_options = $_options.add($_option);
+        });
+        return $_options;
+      }
+      var $_selectbox = $('<select/>', {
+        'class': 'pr-helper-suggestion',
+        'html': _composeOptions(entities)
       })
-      .on('keyup keypress keydown', function(ev){
-        var templateBody = $(this).find('option:selected').attr('data-template-body');
+        .attr({'size': entities.length < 2 ? 2 : entities.length})
+        .on('blur', function(){
+          $(this).remove();
+        })
+        .on('keyup click', this, this.selectSuggestion.preHandler);
+      return $_selectbox;
+    },
+
+    showSuggestions(event) {
+      var arrowsKeyCodes = [37, 38, 39, 40];
+      if (arrowsKeyCodes.indexOf(event.which) !== -1 && this.value === '') {
+        var suggestionObject = event.data;
+        chrome.storage.sync.get(suggestionObject.storageName, suggestionObject.load.bind(suggestionObject));
+      }
+    },
+
+    selectSuggestion: {
+      preHandler(event) {
         var rightArrowAndReturnKeyCodes = [13, 39];
-        if (rightArrowAndReturnKeyCodes.indexOf(ev.which) != -1) {
-          ev.stopPropagation();
-          ev.preventDefault();
-          $('textarea#pull-request-description').val(templateBody).trigger('focus');
-          $('.suggested-templates').hide();
+        if (event.type === "click" || rightArrowAndReturnKeyCodes.indexOf(event.which) !== -1) {
+          var currentSelectbox = this;
+          var suggestionObject = event.data;
+          event.stopPropagation();
+          event.preventDefault();
+          event.data.selectSuggestion.handler(currentSelectbox, suggestionObject);
           return false;
         }
-      });
-
-  $('textarea#pull-request-description').on('keyup', function(ev){
-    var arrowsKeyCodes = [37, 38, 39, 40];
-    if (arrowsKeyCodes.indexOf(ev.which) != -1 && this.value == '') {
-      $(this).after($_templates);
-        $('.suggested-templates')
-          .show()
-          .focus();
+      },
+      handler(currentSelectbox, suggestionObject) {
+        var selectedContent = $(currentSelectbox).find('option:selected').attr('data-content');
+        suggestionObject.$targetInput.val(selectedContent);
+        this.postHandler(currentSelectbox, suggestionObject);
+      },
+      postHandler(currentSelectbox, suggestionObject) {
+        suggestionObject.$targetInput.focus();
+        $(currentSelectbox).hide();
       }
-  });
-}
+    }
+  }
 
-function $_templateSelectOptions(templatesData) {
-  var $_options = $();
-  templatesData.map(function(templateData){
-    var $_option = $('<option/>', {
-      'text': ' ',
-      'data-template-name': templateData.templateName,
-      'data-template-body': templateData.templateBody
-    })
-      .on('click', function(){
-        insertTempate(templateData.templateBody);
-      });
-    $_options = $_options.add($_option);
+  function createSuggestions(properties) {
+    return Object.assign(Object.create(Suggestion), properties);
+  }
+
+  const descriptionSuggestions = createSuggestions({
+    storageName: 'description',
+    $targetInput: $('#pull-request-description')
   });
-  return $_options;
-}
+  descriptionSuggestions.init();
 
 // PR reviewers groups
 

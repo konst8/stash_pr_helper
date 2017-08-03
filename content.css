@@ -1,5 +1,4 @@
-.suggested-templates,
-.suggested-revievers-groups {
+.pr-helper-suggestion {
     position: absolute;
     z-index: 888;
     border: 1px solid #ccc;
@@ -10,8 +9,7 @@
     box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
 
-.suggested-templates option,
-.suggested-revievers-groups option {
+.pr-helper-suggestion option {
   font-size: 13px;
   background-color: #fff;
   color: #333;
@@ -20,8 +18,8 @@
   align-items: baseline;
 }
 
-.suggested-revievers-groups option:after {
-  content: " " attr(data-reviewers);
+.pr-helper-suggestion option:after {
+  content: " " attr(data-content);
   color: lightgray;
   font-size: .8em;
   margin-left: 10px;
@@ -29,12 +27,12 @@
   text-overflow: ellipsis;
 }
 
-.suggested-templates option:before {
-  content: " " attr(data-template-name);;
+.pr-helper-suggestion option:before {
+  content: " " attr(data-title);;
   margin-right: 5px;
 }
-.suggested-templates option:after {
-  content: " " attr(data-template-body);
+.pr-helper-suggestion option:after {
+  content: " " attr(data-content);
   color: lightgray;
   font-size: .8em;
   margin-left: 5px;
