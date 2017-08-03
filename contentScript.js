@@ -1,17 +1,12 @@
 (function($){
 
-chrome.runtime.onMessage.addListener(
-  function(request, sender, sendResponse) {
-    if (request.message === "loaded?") {
-      sendResponse({loaded: true});
+  chrome.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+      if (request.message === "loaded?") {
+        sendResponse({loaded: true});
+      }
     }
-  }
-);
-
-//chrome.storage.sync.get('templates', addTemplatesSuggestions);
-chrome.storage.sync.get('groups', addGroupsSuggestions);
-
-// PR templates
+  );
 
   // Default suggestion object (selectbox with suggestions
   // to be appended for some input or textarea on the page).
@@ -25,8 +20,7 @@ chrome.storage.sync.get('groups', addGroupsSuggestions);
 
     init() {
       this.$appendSelector = this.$appendSelector === null ? this.$targetInput : this.$appendSelector;
-      //chrome.storage.sync.get(this.storageName, this.load.bind(this));
-      this.$targetInput.on('click keyup', this, this.showSuggestions);
+      this.$targetInput.on('click keydown', this, this.showSuggestions);
     },
 
     load(chromeStorage) {
@@ -59,40 +53,36 @@ chrome.storage.sync.get('groups', addGroupsSuggestions);
         .on('blur', function(){
           $(this).remove();
         })
-        .on('click keydown', this, this.selectSuggestion.preHandler);
+        .on('click keydown', this, this.selectSuggestion);
       return $_selectbox;
     },
 
     showSuggestions(event) {
       var arrowsKeyCodes = [37, 38, 39, 40];
       if (arrowsKeyCodes.indexOf(event.which) !== -1 && this.value === '') {
-              console.log("wtf?");
         var suggestionObject = event.data;
         chrome.storage.sync.get(suggestionObject.storageName, suggestionObject.load.bind(suggestionObject));
       }
     },
 
-    selectSuggestion: {
-      preHandler(event) {
-        var rightArrowAndReturnKeyCodes = [13, 39];
-        if (event.type === "click" || rightArrowAndReturnKeyCodes.indexOf(event.which) !== -1) {
-          var currentSelectbox = this;
-          var suggestionObject = event.data;
-          event.stopPropagation();
-          event.preventDefault();
-          event.data.selectSuggestion.handler(currentSelectbox, suggestionObject);
-          return false;
-        }
-      },
-      handler(currentSelectbox, suggestionObject) {
-        var selectedContent = $(currentSelectbox).find('option:selected').attr('data-content');
-        suggestionObject.$targetInput.val(selectedContent);
-        this.postHandler(currentSelectbox, suggestionObject);
-      },
-      postHandler(currentSelectbox, suggestionObject) {
-        suggestionObject.$targetInput.focus();
-        $(currentSelectbox).hide();
+    selectSuggestion(event) {
+      var rightArrowAndReturnKeyCodes = [13, 39];
+      if (event.type === "click" || rightArrowAndReturnKeyCodes.indexOf(event.which) !== -1) {
+        var currentSelectbox = this;
+        var suggestionObject = event.data;
+        event.stopPropagation();
+        event.preventDefault();
+        suggestionObject.handleSelectedSuggestion(currentSelectbox, suggestionObject);
+        return false;
       }
+    },
+
+    handleSelectedSuggestion(currentSelectbox, suggestionObject) {
+      var selectedContent = $(currentSelectbox).find('option:selected').attr('data-content');
+      suggestionObject.$targetInput
+        .val(selectedContent)
+        .focus();
+      $(currentSelectbox).remove();
     }
   }
 
@@ -100,90 +90,57 @@ chrome.storage.sync.get('groups', addGroupsSuggestions);
     return Object.assign(Object.create(Suggestion), properties);
   }
 
+  // Suggestions for PR description field
+
   const descriptionSuggestions = createSuggestions({
-    storageName: 'templates',
+    storageName: 'description',
     $targetInput: $('#pull-request-description')
   });
   descriptionSuggestions.init();
 
-// PR reviewers groups
+  // Suggestions for PR reviewers field
 
-function insertReviewers(reviewersCsv) {
-  reviewersArray = reviewersCsv.split(', ');
-  reviewersArray = reviewersArray.map(function(value, index){
-    var newValue = "'" + value + "'";
-    return newValue;
-  });
-  var ajaxRequest = new XMLHttpRequest();
-  var embeddedScriptUrl = chrome.extension.getURL("contentEject.js");
-  ajaxRequest.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-      var script = document.createElement('script');
-      var code = document.createTextNode('var reviewersArray = [' + reviewersArray + ']; ' + this.response);
-      script.appendChild(code);
-      (document.body || document.head).appendChild(script);
+  const reviewersSuggestions = createSuggestions({
+    storageName: 'reviewers',
+    $targetInput: $('.select2-search-field .select2-input'),
+    $appendSelector: $('.select2-container'),
+    appendType: 'append',
+
+    handleSelectedSuggestion(currentSelectbox, suggestionObject) {
+      (function insertReviewers() {
+        var reviewersCsv = $(currentSelectbox).find('option:selected').attr('data-content');
+        reviewersArray = reviewersCsv.split(', ');
+        reviewersArray = reviewersArray.map(function(value, index){
+          var newValue = "'" + value + "'";
+          return newValue;
+        });
+        var ajaxRequest = new XMLHttpRequest();
+        var embeddedScriptUrl = chrome.extension.getURL("contentEject.js");
+        ajaxRequest.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+            var script = document.createElement('script');
+            var code = document.createTextNode('var reviewersArray = [' + reviewersArray + ']; ' + this.response);
+            script.appendChild(code);
+            (document.body || document.head).appendChild(script);
+          }
+        };
+        ajaxRequest.open("GET", embeddedScriptUrl, true);
+        ajaxRequest.send();
+      })();
+
+      (function _hideDefaultDropdown() {
+        $("#select2-drop-mask").hide();
+        $("#select2-drop")
+          .hide()
+          .removeAttr("id");
+        $('.select2-container-active')
+          .removeClass("select2-dropdown-open")
+          .removeClass("select2-container-active");
+      })();
+
+      $(currentSelectbox).remove();
     }
-  };
-  ajaxRequest.open("GET", embeddedScriptUrl, true);
-  ajaxRequest.send();
-}
-
-function createSelectOptions(groupsData) {
-  var $_options = $();
-  groupsData.map(function(groupData){
-    var $_option = $('<option/>', {
-      'text': groupData.groupName,
-      'data-reviewers': groupData.reviewers
-    })
-      .on('click', function(){
-        insertReviewers(groupData.reviewers);
-      });
-    $_options = $_options.add($_option);
   });
-  return $_options;
-}
-
-function addGroupsSuggestions(chromeStorage) {
-  var $_groups = $('<select/>', {
-      'class': 'suggested-revievers-groups',
-      'html': createSelectOptions(chromeStorage.groups)
-    })
-      .attr({'size': chromeStorage.groups.length < 2 ? 2 : chromeStorage.groups.length})
-      .on('blur', function(){
-        $('.suggested-revievers-groups').hide();
-      })
-      .on('keyup keypress keydown', function(ev){
-        var reviewersCsv = $(this).find('option:selected').attr('data-reviewers');
-        var rightArrowAndReturnKeyCodes = [13, 39];
-        if (rightArrowAndReturnKeyCodes.indexOf(ev.which) != -1) {
-          ev.stopPropagation();
-          ev.preventDefault();
-          insertReviewers(reviewersCsv);
-          hideDefaultDropdown();
-          return false;
-        }
-      });
-
-  $('.select2-search-field .select2-input').on('keyup', function(ev){
-    var arrowsKeyCodes = [37, 38, 39, 40];
-    if (arrowsKeyCodes.indexOf(ev.which) != -1 && this.value == '') {
-      $(this).parents('.select2-container').append($_groups);
-        hideDefaultDropdown();
-        $('.suggested-revievers-groups')
-          .show()
-          .focus();
-      }
-  });
-}
-
-function hideDefaultDropdown() {
-  $("#select2-drop-mask").hide();
-  $("#select2-drop")
-    .hide()
-    .removeAttr("id");
-  $('.select2-container-active')
-    .removeClass("select2-dropdown-open")
-    .removeClass("select2-container-active");
-}
+  reviewersSuggestions.init();
 
 })(jQuery);
