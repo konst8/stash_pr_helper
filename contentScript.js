@@ -59,13 +59,14 @@ chrome.storage.sync.get('groups', addGroupsSuggestions);
         .on('blur', function(){
           $(this).remove();
         })
-        .on('keyup click', this, this.selectSuggestion.preHandler);
+        .on('click keydown', this, this.selectSuggestion.preHandler);
       return $_selectbox;
     },
 
     showSuggestions(event) {
       var arrowsKeyCodes = [37, 38, 39, 40];
       if (arrowsKeyCodes.indexOf(event.which) !== -1 && this.value === '') {
+              console.log("wtf?");
         var suggestionObject = event.data;
         chrome.storage.sync.get(suggestionObject.storageName, suggestionObject.load.bind(suggestionObject));
       }
@@ -100,7 +101,7 @@ chrome.storage.sync.get('groups', addGroupsSuggestions);
   }
 
   const descriptionSuggestions = createSuggestions({
-    storageName: 'description',
+    storageName: 'templates',
     $targetInput: $('#pull-request-description')
   });
   descriptionSuggestions.init();
@@ -114,7 +115,7 @@ function insertReviewers(reviewersCsv) {
     return newValue;
   });
   var ajaxRequest = new XMLHttpRequest();
-  var embeddedScriptUrl = chrome.extension.getURL("codeToEject.js");
+  var embeddedScriptUrl = chrome.extension.getURL("contentEject.js");
   ajaxRequest.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
       var script = document.createElement('script');
