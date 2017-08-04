@@ -35,6 +35,7 @@ input[type="text"] {
   margin: 20px 0;
   border: none;
   cursor: -webkit-grab;
+  min-height: 56px;
 }
 
 .close-trigger {
@@ -58,6 +59,12 @@ input[type="text"] {
   float: left;
   margin-right: 10px;
   cursor: -webkit-grab;
+}
+
+.ui-icon-plus {
+  display: inline-block;
+  vertical-align: text-bottom;
+  margin-right: 3px;
 }
 
 .ui-sortable-helper {

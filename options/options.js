@@ -2,9 +2,6 @@
 
 (function ($){
   
-  // PR entity's default object.
-  // We will inherit from it later.
-
   const Entity = {
 
     $container: null,
@@ -119,7 +116,7 @@
     $container: $('.descriptions'),
     $add: $('a#add-description'),
     titleHelpText: "Title",
-    contentHelpText: "PR's description",
+    contentHelpText: "PR description",
     cssClass: "description-entity"
   });
   description.init();
@@ -131,7 +128,7 @@
     $container: $('.reviewers'),
     $add: $('a#add-reviewers'),
     titleHelpText: "Title",
-    contentHelpText: "PR reviewers in csv format",
+    contentHelpText: "PR reviewers in csv format, e.g. bgates, sjobs, emusk, kmishur",
     cssClass: "reviewers-entity"
   });
   reviewers.init();

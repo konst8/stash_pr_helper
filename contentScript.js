@@ -8,9 +8,6 @@
     }
   );
 
-  // Default suggestion object (selectbox with suggestions
-  // to be appended for some input or textarea on the page).
-
   const Suggestion = {
 
     storageName: null,
@@ -139,15 +136,7 @@
       $('body').prepend(
         $('<div/>', {
           class: 'pr-helper-overlay',
-        })
-          .css({
-            background: 'black',
-            position: 'fixed',
-            width: '100%',
-            height: '100%',
-            'z-index': '10000',
-            opacity: '.5'
-          })
+        });
       );
       suggestionObject._hideDefaultDropdown();
       $(currentSelectbox).remove();

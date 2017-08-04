@@ -1,12 +1,21 @@
+.pr-helper-overlay {
+  background: black;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+  opacity: .5;
+}
+
 .pr-helper-suggestion {
-    position: absolute;
-    z-index: 888;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    display: block;
-    width: 100%;
-    outline: none;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+  position: absolute;
+  z-index: 888;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  display: block;
+  width: 100%;
+  outline: none;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
 
 .pr-helper-suggestion option {
@@ -31,6 +40,7 @@
   content: " " attr(data-title);
   margin-right: 5px;
 }
+
 .pr-helper-suggestion option:after {
   content: " " attr(data-content);
   color: lightgray;
