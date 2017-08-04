@@ -28,7 +28,7 @@
 }
 
 .pr-helper-suggestion option:before {
-  content: " " attr(data-title);;
+  content: " " attr(data-title);
   margin-right: 5px;
 }
 .pr-helper-suggestion option:after {

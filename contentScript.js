@@ -37,7 +37,7 @@
         var $_options = $();
         entities.map(entity => {
           var $_option = $('<option/>', {
-            'text': ' ',
+            text: ' ',
             'data-title': entity.title,
             'data-content': entity.content
           });
@@ -46,8 +46,8 @@
         return $_options;
       }
       var $_selectbox = $('<select/>', {
-        'class': 'pr-helper-suggestion',
-        'html': _composeOptions(entities)
+        class: 'pr-helper-suggestion',
+        html: _composeOptions(entities)
       })
         .attr({'size': entities.length < 2 ? 2 : entities.length})
         .on('blur', function(){
@@ -106,6 +106,15 @@
     $appendSelector: $('.select2-container'),
     appendType: 'append',
 
+    showSuggestions(event) {
+      var arrowsKeyCodes = [37, 38, 39, 40];
+      if (arrowsKeyCodes.indexOf(event.which) !== -1 && this.value === '') {
+        var suggestionObject = event.data;
+        chrome.storage.sync.get(suggestionObject.storageName, suggestionObject.load.bind(suggestionObject));
+        suggestionObject._hideDefaultDropdown();
+      }
+    },
+
     handleSelectedSuggestion(currentSelectbox, suggestionObject) {
       (function insertReviewers() {
         var reviewersCsv = $(currentSelectbox).find('option:selected').attr('data-content');
@@ -117,7 +126,7 @@
         var ajaxRequest = new XMLHttpRequest();
         var embeddedScriptUrl = chrome.extension.getURL("contentEject.js");
         ajaxRequest.onreadystatechange = function() {
-          if (this.readyState == 4 && this.status == 200) {
+          if (this.readyState === 4 && this.status === 200) {
             var script = document.createElement('script');
             var code = document.createTextNode('var reviewersArray = [' + reviewersArray + ']; ' + this.response);
             script.appendChild(code);
@@ -127,18 +136,31 @@
         ajaxRequest.open("GET", embeddedScriptUrl, true);
         ajaxRequest.send();
       })();
-
-      (function _hideDefaultDropdown() {
-        $("#select2-drop-mask").hide();
-        $("#select2-drop")
-          .hide()
-          .removeAttr("id");
-        $('.select2-container-active')
-          .removeClass("select2-dropdown-open")
-          .removeClass("select2-container-active");
-      })();
-
+      $('body').prepend(
+        $('<div/>', {
+          class: 'pr-helper-overlay',
+        })
+          .css({
+            background: 'black',
+            position: 'fixed',
+            width: '100%',
+            height: '100%',
+            'z-index': '10000',
+            opacity: '.5'
+          })
+      );
+      suggestionObject._hideDefaultDropdown();
       $(currentSelectbox).remove();
+    },
+
+    _hideDefaultDropdown() {
+      $("#select2-drop-mask").hide();
+      $("#select2-drop")
+        .hide()
+        .removeAttr("id");
+      $('.select2-container-active')
+        .removeClass("select2-dropdown-open")
+        .removeClass("select2-container-active");
     }
   });
   reviewersSuggestions.init();

@@ -23,16 +23,16 @@
     _compose(title = '', content = '') {
       var collapsed = content !== '' ? ' collapsed' : '';
       var $_entity = $('<div/>', {
-        'class': 'entity ui-state-default ' + this.cssClass + collapsed,
-        'html': [
+        class: 'entity ui-state-default ' + this.cssClass + collapsed,
+        html: [
           $('<span/>', {
-            'class': 'close-trigger ui-icon ui-icon-close'
+            class: 'close-trigger ui-icon ui-icon-close'
           })
             .on('click', function(){
               $(this).closest('.entity').remove();
             }),
           $('<span/>', {
-            'class': 'expand-trigger ui-icon ui-icon-caret-1-s'
+            class: 'expand-trigger ui-icon ui-icon-caret-1-s'
           })
             .on('click', function(){
               $(this).closest('.entity').toggleClass('collapsed')
@@ -41,21 +41,21 @@
                   .attr('data-content', $(this).siblings('.content').find('textarea').val());
             }),
           $('<span/>', {
-            'class': 'ui-icon ui-icon-arrow-4'
+            class: 'ui-icon ui-icon-arrow-4'
           }),
           $('<div/>', {
-            'class': 'content',
+            class: 'content',
             'data-title': title,
             'data-content': content,
-            'html': [
+            html: [
               $('<input/>', {
-                'type': 'text',
-                'placeholder': this.titleHelpText
+                type: 'text',
+                placeholder: this.titleHelpText
               })
                 .val(title),
               $('<textarea/>', {
-                'rows': 5,
-                'placeholder': this.contentHelpText
+                rows: 5,
+                placeholder: this.contentHelpText
               })
                 .val(content)
             ]
@@ -103,7 +103,7 @@
       });
       chrome.storage.sync.set({
         [this.name]: entities }, function(){
-          //window.close();
+          window.close();
       });
     }
   };
@@ -135,98 +135,5 @@
     cssClass: "reviewers-entity"
   });
   reviewers.init();
-
-
-  // Default suggestion object (selectbox with suggestions
-  // to be appended for some input or textarea on the page).
-
-  const Suggestion = {
-
-    storageName: null,
-    $targetInput: null,
-    $appendSelector: null,
-    appendType: 'after', // options: 'after', 'before', 'prepend', 'append'
-
-    init() {
-      this.$appendSelector = this.$appendSelector === null ? this.$targetInput : this.$appendSelector;
-      //chrome.storage.sync.get(this.storageName, this.load.bind(this));
-      this.$targetInput.on('click keyup', this, this.showSuggestions);
-    },
-
-    load(chromeStorage) {
-      var storedEntities = chromeStorage[this.storageName];
-      if (typeof storedEntities !== undefined) {
-        var $_suggestionsSelectbox = this._compose(storedEntities);
-        this.$appendSelector[this.appendType]($_suggestionsSelectbox);
-        $_suggestionsSelectbox.focus();
-      } 
-    },
-
-    _compose(entities) {
-      function _composeOptions(entities) {
-        var $_options = $();
-        entities.map(entity => {
-          var $_option = $('<option/>', {
-            'text': entity.title + ': ' + entity.content,
-            'data-title': entity.title,
-            'data-content': entity.content
-          });
-          $_options = $_options.add($_option);
-        });
-        return $_options;
-      }
-      var $_selectbox = $('<select/>', {
-        'class': 'pr-helper-suggestion',
-        'html': _composeOptions(entities)
-      })
-        .attr({'size': entities.length < 2 ? 2 : entities.length})
-        .on('blur', function(){
-          $(this).remove();
-        })
-        .on('keyup click', this, this.selectSuggestion.preHandler);
-      return $_selectbox;
-    },
-
-    showSuggestions(event) {
-      var arrowsKeyCodes = [37, 38, 39, 40];
-      if (arrowsKeyCodes.indexOf(event.which) !== -1 && this.value === '') {
-        var suggestionObject = event.data;
-        chrome.storage.sync.get(suggestionObject.storageName, suggestionObject.load.bind(suggestionObject));
-      }
-    },
-
-    selectSuggestion: {
-      preHandler(event) {
-        var rightArrowAndReturnKeyCodes = [13, 39];
-        if (event.type === "click" || rightArrowAndReturnKeyCodes.indexOf(event.which) !== -1) {
-          var currentSelectbox = this;
-          var suggestionObject = event.data;
-          event.stopPropagation();
-          event.preventDefault();
-          event.data.selectSuggestion.handler(currentSelectbox, suggestionObject);
-          return false;
-        }
-      },
-      handler(currentSelectbox, suggestionObject) {
-        var selectedContent = $(currentSelectbox).find('option:selected').attr('data-content');
-        suggestionObject.$targetInput.val(selectedContent);
-        this.postHandler(currentSelectbox, suggestionObject);
-      },
-      postHandler(currentSelectbox, suggestionObject) {
-        suggestionObject.$targetInput.focus();
-        $(currentSelectbox).hide();
-      }
-    }
-  }
-
-  function createSuggestions(properties) {
-    return Object.assign(Object.create(Suggestion), properties);
-  }
-
-  const descriptionSuggestions = createSuggestions({
-    storageName: 'description',
-    $targetInput: $('#pull-request-description'),
-  });
-  descriptionSuggestions.init();
 
 })(jQuery)
