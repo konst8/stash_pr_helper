@@ -135,8 +135,8 @@
       })();
       $('body').prepend(
         $('<div/>', {
-          class: 'pr-helper-overlay',
-        });
+          class: 'pr-helper-overlay'
+        })
       );
       suggestionObject._hideDefaultDropdown();
       $(currentSelectbox).remove();
