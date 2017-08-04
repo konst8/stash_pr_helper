@@ -29,8 +29,7 @@ input[type="text"] {
   padding: 5px 10px;
 }
 
-.template,
-.group {
+.entity {
   background-color: rgba(0, 0, 0, .05);
   padding: 20px 10px;
   margin: 20px 0;
@@ -38,20 +37,20 @@ input[type="text"] {
   cursor: -webkit-grab;
 }
 
-.ui-icon-close {
+.close-trigger {
   float: right;
   margin-left: 10px;
   cursor: pointer;
 }
 
-.ui-icon-caret-1-s {
+.expand-trigger {
   float: right;
   margin-left: 10px;
   cursor: pointer;
   transform: rotate(180deg);
 }
 
-.collapsed .ui-icon-caret-1-s {
+.collapsed .expand-trigger {
   transform: rotate(0);
 }
 
@@ -77,24 +76,26 @@ input[type="text"] {
 
 .collapsed .content {
   white-space: nowrap;
-  display: flex;
-  align-items: baseline;
 }
 
 .collapsed .content:before {
-  content: attr(data-name) " ";
+  content: attr(data-title) " ";
   font-weight: bold;
   margin-right: 10px;
   overflow: hidden;
   text-overflow: ellipsis;
+  float: left;
+  max-width: 50%;
 }
 
 .collapsed .content:after {
-  content: attr(data-body);
+  content: attr(data-content);
   color: gray;
   font-size: 10px;
   text-overflow: ellipsis;
+  display: block;
   overflow: hidden;
+  margin-top: 3px;
 }
 
 .content:focus {
@@ -106,14 +107,14 @@ input[type="text"] {
   display: none;
 }
 
-.add-template-wrapper {
+.entity-actions {
   border-bottom: 1px solid #eee;
   margin-bottom: 20px;
   text-align: right;
   padding-bottom: 20px;
 }
 
-.add-group-wrapper {
+.description-actions {
   text-align: right;
   padding-bottom: 20px;  
 }
@@ -124,7 +125,7 @@ input[type="text"] {
   vertical-align: top;
 }
 
-.actions-wrapper {
+.settings-actions {
   position: fixed;
   bottom: 0;
   width: 640px;
@@ -137,7 +138,7 @@ input[type="text"] {
   justify-content: flex-end;
 }
 
-.actions-wrapper a,
-.actions-wrapper button {
+.settings-actions a,
+.settings-actions button {
   margin-left: 10px;
 }

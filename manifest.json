@@ -27,13 +27,13 @@
   "content_scripts": [
     {
       "matches": ["https://*/*pull-requests?*", "https://*/*compare/commits?*"],
-      "js": ["libs/jquery-ui-1.12.1.custom/external/jquery/jquery.js", "addReviewersScript.js"],
+      "js": ["libs/jquery-ui-1.12.1.custom/external/jquery/jquery.js", "contentScript.js"],
       "css": ["content.css"]
     }
   ],
 
   "web_accessible_resources": [
-    "codeToEject.js"
+    "contentEject.js"
   ],
 
   "options_ui": {
