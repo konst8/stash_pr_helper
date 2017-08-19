@@ -1,9 +1,9 @@
 {
   "manifest_version": 2,
 
-  "name": "Stash helper",
-  "description": "Fills in Pull Request's reviewers",
-  "version": "1.0",
+  "name": "Stash PR Helper",
+  "description": "Helps Stash users to fill in Pull Requests' descriptions and reviewers",
+  "version": "1.0.0.1",
 
   "permissions": [
     "activeTab",
