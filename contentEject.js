@@ -1,28 +1,53 @@
 (function($){
-  var $reviewersInput = $('.pull-request-reviewers .select2-input');
-  var index = 0;
+  var reviewers = reviewersArray || [];
+  var loadedReviewers = [];
+  var length = reviewers.length;
 
-  $reviewersInput.val(reviewersArray[index]).click();
+  reviewers.forEach(function(user) {
+    loadUser(user, collectReviewersObjects);
+  });
 
-  $( document ).ajaxComplete(function( event, xhr, settings ) {
-    if (typeof xhr.responseText !== "undefined"
-      && typeof $.parseJSON(xhr.responseText).values[0] !== "undefined"
-      && $.parseJSON(xhr.responseText).values[0].name === reviewersArray[index]) {
-      $('.select2-highlighted .select2-result-label').trigger('mouseup');
-      if (index < reviewersArray.length) {
-        index += 1;
-        $reviewersInput.val(reviewersArray[index]).click();
-        if (index === reviewersArray.length) {
-          $('.pr-helper-overlay').remove();
+  function loadUser(user, callback) {
+    var requestObject = {
+      avatarSize: 32, 
+      permission: "LICENSED_USER", 
+      start: 0, 
+      filter: user
+    };
+    $.get( "/rest/api/latest/users", requestObject)
+      .done(function(data) {
+        if (data.values.length > 0) {
+          var loadedUserObject = data.values[0];
+          var preparedUserObject = {
+            id: loadedUserObject.slug,
+            text: loadedUserObject.displayName,
+            item: loadedUserObject
+          };
+          callback(preparedUserObject, user);
+        } else {
+          callback('fail', user);
         }
-      } 
-    } else {
-      $('.pr-helper-overlay').remove();
-    }
-  });
+      })
+      .fail(function(){
+        callback('fail', user);
+      });
+  }
 
-  $( document ).ajaxError(function(event, jqxhr, settings, thrownError) {
-    $('.pr-helper-overlay').remove();
-  });
+  function collectReviewersObjects(preparedUserObject, user) {    
+    if (preparedUserObject === 'fail') {
+      length = length - 1;
+      console.error("User " + user + " was not found.");
+    } else {
+      loadedReviewers.push(preparedUserObject);
+    }
+    if (length === loadedReviewers.length) {
+      pushReviewers(loadedReviewers);
+    }
+  }
+
+  function pushReviewers(loadedReviewers) {
+    $('.pr-helper-overlay').removeClass('active');
+    AJS.$('#reviewers').auiSelect2('data', loadedReviewers);
+  }
 
 })(jQuery);

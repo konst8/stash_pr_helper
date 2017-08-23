@@ -8,6 +8,12 @@
     }
   );
 
+  $('body').prepend(
+    $('<div/>', {
+      class: 'pr-helper-overlay'
+    })
+  );
+
   const Suggestion = {
 
     storageName: null,
@@ -133,13 +139,9 @@
         ajaxRequest.open("GET", embeddedScriptUrl, true);
         ajaxRequest.send();
       })();
-      $('body').prepend(
-        $('<div/>', {
-          class: 'pr-helper-overlay'
-        })
-      );
       suggestionObject._hideDefaultDropdown();
       $(currentSelectbox).remove();
+      $('.pr-helper-overlay').addClass('active');
     },
 
     _hideDefaultDropdown() {
