@@ -3,7 +3,7 @@
 
   "name": "Stash PR Helper",
   "description": "Helps Stash users to fill in Pull Requests' descriptions and reviewers",
-  "version": "1.0.0.3",
+  "version": "1.0.0.4",
 
   "permissions": [
     "activeTab",
@@ -26,7 +26,11 @@
 
   "content_scripts": [
     {
-      "matches": ["https://*/*pull-requests?*", "https://*/*compare/commits?*", "https://*/*compare/diff?*"],
+      "matches": [
+        "https://*/*pull-requests*",
+        "https://*/*compare/commits?*",
+        "https://*/*compare/diff?*"
+      ],
       "js": ["libs/jquery-ui-1.12.1.custom/external/jquery/jquery.js", "contentScript.js"],
       "css": ["content.css"]
     }

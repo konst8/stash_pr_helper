@@ -17,20 +17,21 @@
   const Suggestion = {
 
     storageName: null,
-    $targetInput: null,
-    $appendSelector: null,
+    targetInput: null,
+    appendSelector: null,
     appendType: 'after', // options: 'after', 'before', 'prepend', 'append'
 
     init() {
-      this.$appendSelector = this.$appendSelector === null ? this.$targetInput : this.$appendSelector;
-      this.$targetInput.on('click keydown', this, this.showSuggestions);
+      var selector = this.targetInput;
+      this.appendSelector = this.appendSelector === null ? this.targetInput : this.appendSelector;
+      $('body').on('keyup', selector, this, this.showSuggestions);
     },
 
     load(chromeStorage) {
       var storedEntities = chromeStorage[this.storageName];
       if (typeof storedEntities !== undefined) {
         var $_suggestionsSelectbox = this._compose(storedEntities);
-        this.$appendSelector[this.appendType]($_suggestionsSelectbox);
+        $(this.appendSelector)[this.appendType]($_suggestionsSelectbox);
         $_suggestionsSelectbox.focus();
       } 
     },
@@ -82,7 +83,7 @@
 
     handleSelectedSuggestion(currentSelectbox, suggestionObject) {
       var selectedContent = $(currentSelectbox).find('option:selected').attr('data-content');
-      suggestionObject.$targetInput
+      $(suggestionObject.targetInput)
         .val(selectedContent)
         .focus();
       $(currentSelectbox).remove();
@@ -97,7 +98,7 @@
 
   const descriptionSuggestions = createSuggestions({
     storageName: 'description',
-    $targetInput: $('#pull-request-description')
+    targetInput: '#pull-request-description'
   });
   descriptionSuggestions.init();
 
@@ -105,13 +106,13 @@
 
   const reviewersSuggestions = createSuggestions({
     storageName: 'reviewers',
-    $targetInput: $('.select2-search-field .select2-input'),
-    $appendSelector: $('.select2-container'),
+    targetInput: '.select2-search-field .select2-input',
+    appendSelector: '.select2-container',
     appendType: 'append',
 
     showSuggestions(event) {
       var arrowsKeyCodes = [37, 38, 39, 40];
-      if (arrowsKeyCodes.indexOf(event.which) !== -1 && this.value === '') {
+      if (arrowsKeyCodes.indexOf(event.which) !== -1) {
         var suggestionObject = event.data;
         chrome.storage.sync.get(suggestionObject.storageName, suggestionObject.load.bind(suggestionObject));
         suggestionObject._hideDefaultDropdown();
