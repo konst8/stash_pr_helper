@@ -112,10 +112,11 @@
 
     showSuggestions(event) {
       var arrowsKeyCodes = [37, 38, 39, 40];
-      if (arrowsKeyCodes.indexOf(event.which) !== -1) {
-        var suggestionObject = event.data;
-        chrome.storage.sync.get(suggestionObject.storageName, suggestionObject.load.bind(suggestionObject));
-        suggestionObject._hideDefaultDropdown();
+      if (arrowsKeyCodes.indexOf(event.which) !== -1 
+        && $('.select2-drop .select2-result-label:visible').length < 1) {
+          var suggestionObject = event.data;
+          chrome.storage.sync.get(suggestionObject.storageName, suggestionObject.load.bind(suggestionObject));
+          suggestionObject._hideDefaultDropdown();
       }
     },
 
