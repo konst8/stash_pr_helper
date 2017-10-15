@@ -47,6 +47,12 @@
 
   function pushReviewers(loadedReviewers) {
     $('.pr-helper-overlay').removeClass('active');
+    loadedReviewers.forEach(function(reviewer){
+      AJS.$('#reviewers').trigger({
+        type: 'change',
+        added: reviewer
+      });
+    });
     AJS.$('#reviewers').auiSelect2('data', loadedReviewers);
   }
 
