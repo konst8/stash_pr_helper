@@ -3,7 +3,7 @@
 
   "name": "Stash PR Helper",
   "description": "Helps Stash users to fill in Pull Requests' descriptions and reviewers",
-  "version": "1.0.0.6",
+  "version": "1.0.0.7",
 
   "permissions": [
     "activeTab",

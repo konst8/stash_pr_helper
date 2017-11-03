@@ -47,13 +47,25 @@
 
   function pushReviewers(loadedReviewers) {
     $('.pr-helper-overlay').removeClass('active');
-    loadedReviewers.forEach(function(reviewer){
+    var existingReviewers = AJS.$('#reviewers').auiSelect2('data');
+    AJS.$('#reviewers')
+      .auiSelect2('data', null)
+      .trigger("change");
+    existingReviewers.forEach(function(existingReviewer){
       AJS.$('#reviewers').trigger({
-        type: 'change',
-        added: reviewer
+        'type': 'change',
+        'removed': existingReviewer
       });
     });
-    AJS.$('#reviewers').auiSelect2('data', loadedReviewers);
+    loadedReviewers.forEach(function(loadedReviewer){
+      AJS.$('#reviewers').trigger({
+        type: 'change',
+        added: loadedReviewer
+      });
+    });
+    AJS.$('#reviewers')
+      .auiSelect2('data', loadedReviewers);
+    $('li.select2-no-results ~ li').remove();
   }
 
 })(jQuery);
