@@ -1,4 +1,3 @@
-
 chrome.tabs.onUpdated.addListener(getIconStatus);
 chrome.tabs.onActivated.addListener(getIconStatus);
 

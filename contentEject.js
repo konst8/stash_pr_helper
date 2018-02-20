@@ -19,7 +19,7 @@
         if (data.values.length > 0) {
           var loadedUserObject = data.values[0];
           var preparedUserObject = {
-            id: loadedUserObject.slug,
+            id: loadedUserObject.name,
             text: loadedUserObject.displayName,
             item: loadedUserObject
           };
